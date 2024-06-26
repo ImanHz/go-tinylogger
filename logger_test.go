@@ -2,7 +2,7 @@ package gotinylogger
 
 import "testing"
 
-func Test(t *testing.T) {
+func PrettyTest(t *testing.T) {
 
 	logger := New()
 	testSlice := []int{1, 2, 3}

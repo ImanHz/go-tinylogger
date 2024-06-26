@@ -10,17 +10,10 @@ type TinyLogger struct {
 	hasColor bool
 }
 
+// returns a new instance of tiny-logger
 func New() *TinyLogger {
 	return &TinyLogger{hasColor: true}
 }
-
-const (
-	reset  = "\033[0m"
-	red    = "\033[31m"
-	green  = "\033[32m"
-	yellow = "\033[33m"
-	bold   = "\033[1m"
-)
 
 // turns on color mode for macOs/linux terminals
 func (t *TinyLogger) SetColor(onOff bool) {
@@ -53,6 +46,7 @@ func (t *TinyLogger) Panic(code int, v ...any) {
 }
 
 // prints human-readable version of @v. title is the table title
+// currently works for map, slice and struct
 func (t *TinyLogger) Pretty(title string, v any) {
 
 	titleColor := yellow
@@ -60,16 +54,18 @@ func (t *TinyLogger) Pretty(title string, v any) {
 	headerBold := bold
 
 	if !t.hasColor {
-
 		titleColor = ""
 		headerColor = ""
 		headerBold = ""
 	}
+
+	// getting value, kind and type for reflection
 	val := reflect.ValueOf(v)
 	kind := val.Kind()
 	typ := reflect.TypeOf(v)
 
 	switch kind {
+
 	case reflect.Struct:
 
 		fmt.Printf("%s%s%s%s\n", titleColor, headerBold, title, reset)
@@ -84,8 +80,10 @@ func (t *TinyLogger) Pretty(title string, v any) {
 		}
 
 	case reflect.Slice:
+
 		fmt.Printf("%s%s%s%s\n", titleColor, headerBold, title, reset)
 		fmt.Printf("%s%-4s \t %s (Type=%s) %s\n", headerColor, "Index", "Value", typ.String(), reset)
+
 		for i := 0; i < val.Len(); i++ {
 			row := fmt.Sprintf("%-4d \t %v ", i, val.Index(i))
 			fmt.Println(row)
