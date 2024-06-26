@@ -4,16 +4,18 @@ import "testing"
 
 func Test(t *testing.T) {
 
+	logger := New()
 	testSlice := []int{1, 2, 3}
-	Pretty("int slice", &testSlice)
+	logger.Pretty("int slice", testSlice)
 
 	var testStruct = struct {
 		fruit  string
 		weight float64
 	}{fruit: "apple", weight: 12.4}
 
-	Pretty("fruit struct", testStruct)
+	logger.Pretty("fruit struct", testStruct)
 
+	logger.SetColor(false)
 	var mp = map[string]int{"first": 1, "second": 2}
-	Pretty("map", mp)
+	logger.Pretty("map", mp)
 }

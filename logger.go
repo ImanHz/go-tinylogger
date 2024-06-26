@@ -6,6 +6,14 @@ import (
 	"reflect"
 )
 
+type TinyLogger struct {
+	hasColor bool
+}
+
+func New() *TinyLogger {
+	return &TinyLogger{hasColor: true}
+}
+
 const (
 	reset  = "\033[0m"
 	red    = "\033[31m"
@@ -14,41 +22,49 @@ const (
 	bold   = "\033[1m"
 )
 
-var hasColor = true
-
 // turns on color mode for macOs/linux terminals
-func SetColor(onOff bool) {
+func (t *TinyLogger) SetColor(onOff bool) {
 	if onOff {
-		hasColor = true
+		t.hasColor = true
 	} else {
-		hasColor = false
+		t.hasColor = false
 	}
 }
 
 // prints error logs
-func Error(v ...any) {
-	print(red, "ERR", v...)
+func (t *TinyLogger) Error(v ...any) {
+	t.print(red, "ERR", v...)
 }
 
 // prints info logs
-func Info(v ...any) {
-	print(green, "INF", v...)
+func (t *TinyLogger) Info(v ...any) {
+	t.print(green, "INF", v...)
 }
 
 // prints warning logs
-func Warning(v ...any) {
-	print(yellow, "WRN", v...)
+func (t *TinyLogger) Warning(v ...any) {
+	t.print(yellow, "WRN", v...)
 }
 
 // prints fatal log and exits with @code
-func Panic(code int, v ...any) {
-	print(red, "FTL", v...)
+func (t *TinyLogger) Panic(code int, v ...any) {
+	t.print(red, "FTL", v...)
 	os.Exit(code)
 }
 
 // prints human-readable version of @v. title is the table title
-func Pretty(title string, v any) {
+func (t *TinyLogger) Pretty(title string, v any) {
 
+	titleColor := yellow
+	headerColor := green
+	headerBold := bold
+
+	if !t.hasColor {
+
+		titleColor = ""
+		headerColor = ""
+		headerBold = ""
+	}
 	val := reflect.ValueOf(v)
 	kind := val.Kind()
 	typ := reflect.TypeOf(v)
@@ -56,8 +72,8 @@ func Pretty(title string, v any) {
 	switch kind {
 	case reflect.Struct:
 
-		fmt.Printf("%s%s%s%s\n", yellow, bold, title, reset)
-		fmt.Printf("%s%-10s \t %s%s\n", green, "Field", "Value", reset)
+		fmt.Printf("%s%s%s%s\n", titleColor, headerBold, title, reset)
+		fmt.Printf("%s%-10s \t %s%s\n", headerColor, "Field", "Value", reset)
 
 		fieldNum := val.NumField()
 		for i := 0; i < fieldNum; i++ {
@@ -68,8 +84,8 @@ func Pretty(title string, v any) {
 		}
 
 	case reflect.Slice:
-		fmt.Printf("%s%s%s%s\n", yellow, bold, title, reset)
-		fmt.Printf("%s%-4s \t %s (Type=%s) %s\n", green, "Index", "Value", typ.String(), reset)
+		fmt.Printf("%s%s%s%s\n", titleColor, headerBold, title, reset)
+		fmt.Printf("%s%-4s \t %s (Type=%s) %s\n", headerColor, "Index", "Value", typ.String(), reset)
 		for i := 0; i < val.Len(); i++ {
 			row := fmt.Sprintf("%-4d \t %v ", i, val.Index(i))
 			fmt.Println(row)
@@ -77,8 +93,8 @@ func Pretty(title string, v any) {
 		}
 	case reflect.Map:
 
-		fmt.Printf("%s%s%s%s\n", yellow, bold, title, reset)
-		fmt.Printf("%s%-10s \t %s%s\n", green, "Key", "Value", reset)
+		fmt.Printf("%s%s%s%s\n", titleColor, headerBold, title, reset)
+		fmt.Printf("%s%-10s \t %s%s\n", headerColor, "Key", "Value", reset)
 
 		rng := val.MapRange()
 		for rng.Next() {
@@ -88,6 +104,6 @@ func Pretty(title string, v any) {
 		}
 
 	default:
-		Info(v)
+		t.Info(v)
 	}
 }

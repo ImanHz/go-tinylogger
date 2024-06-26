@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-func print(color string, ident string, v ...any) {
+func (t *TinyLogger) print(color string, ident string, v ...any) {
 
-	if !hasColor {
+	if !t.hasColor {
 		color = ""
 	}
 
