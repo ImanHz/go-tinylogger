@@ -64,44 +64,80 @@ func (t *TinyLogger) Pretty(title string, v any) {
 	kind := val.Kind()
 	typ := reflect.TypeOf(v)
 
+	// dereference if v is a pointer
+	if kind == reflect.Pointer {
+		if typ != nil {
+			val = val.Elem()
+			kind = val.Kind()
+			typ = reflect.TypeOf(val)
+		}
+	}
 	switch kind {
 
 	case reflect.Struct:
-
 		fmt.Printf("%s%s%s%s\n", titleColor, headerBold, title, reset)
-		fmt.Printf("%s%-10s \t %s%s\n", headerColor, "Field", "Value", reset)
-
-		fieldNum := val.NumField()
-		for i := 0; i < fieldNum; i++ {
-			field := val.Field(i)
-			name := typ.Field(i).Name
-			row := fmt.Sprintf("%-10v \t %v ", name, field)
-			fmt.Println(row)
-		}
+		printStruct(&val, &typ, headerColor)
 
 	case reflect.Slice:
-
 		fmt.Printf("%s%s%s%s\n", titleColor, headerBold, title, reset)
-		fmt.Printf("%s%-4s \t %s (Type=%s) %s\n", headerColor, "Index", "Value", typ.String(), reset)
+		printSlice(&val, &typ, headerColor)
 
-		for i := 0; i < val.Len(); i++ {
-			row := fmt.Sprintf("%-4d \t %v ", i, val.Index(i))
-			fmt.Println(row)
-
-		}
 	case reflect.Map:
-
 		fmt.Printf("%s%s%s%s\n", titleColor, headerBold, title, reset)
-		fmt.Printf("%s%-10s \t %s%s\n", headerColor, "Key", "Value", reset)
-
-		rng := val.MapRange()
-		for rng.Next() {
-
-			row := fmt.Sprintf("%-10v \t %v ", rng.Key(), rng.Value())
-			fmt.Println(row)
-		}
+		printMap(&val, headerColor)
 
 	default:
 		t.Info(v)
 	}
+}
+
+func printSlice(val *reflect.Value, typ *reflect.Type, headerColor string) {
+
+	if val == nil || typ == nil {
+		fmt.Println("slice print: value or type is null!")
+		return
+	}
+	fmt.Printf("%s%-4s \t %s (Type=%s) %s\n", headerColor, "Index", "Value", (*typ).String(), reset)
+
+	for i := 0; i < val.Len(); i++ {
+		row := fmt.Sprintf("%-4d \t %v ", i, val.Index(i))
+		fmt.Println(row)
+
+	}
+
+}
+
+func printMap(val *reflect.Value, headerColor string) {
+	fmt.Printf("%s%-10s \t %s%s\n", headerColor, "Key", "Value", reset)
+
+	if val == nil {
+		fmt.Println("map print: value is null!")
+		return
+	}
+
+	rng := val.MapRange()
+	for rng.Next() {
+
+		row := fmt.Sprintf("%-10v \t %v ", rng.Key(), rng.Value())
+		fmt.Println(row)
+	}
+
+}
+
+func printStruct(val *reflect.Value, typ *reflect.Type, headerColor string) {
+	if val == nil || typ == nil {
+		fmt.Println("struct print: value or type is null!")
+		return
+	}
+
+	fmt.Printf("%s%-10s \t %s%s\n", headerColor, "Field", "Value", reset)
+
+	fieldNum := val.NumField()
+	for i := 0; i < fieldNum; i++ {
+		field := val.Field(i)
+		name := (*typ).Field(i).Name
+		row := fmt.Sprintf("%-10v \t %v ", name, field)
+		fmt.Println(row)
+	}
+
 }

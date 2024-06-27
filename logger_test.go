@@ -2,11 +2,11 @@ package gotinylogger
 
 import "testing"
 
-func PrettyTest(t *testing.T) {
+func TestPretty(t *testing.T) {
 
 	logger := New()
 	testSlice := []int{1, 2, 3}
-	logger.Pretty("int slice", testSlice)
+	logger.Pretty("int slice", &testSlice)
 
 	var testStruct = struct {
 		fruit  string
